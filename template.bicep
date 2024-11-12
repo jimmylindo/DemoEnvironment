@@ -22,10 +22,10 @@ param networkInterfaces_acme_dc01 string = 'acme-dc01-nic'
 param VM_acme_dc01_privateIP string = '10.0.0.4'
 
 //@description('The location of resources such as templates and DSC modules that the script is dependent')
-//param assetLocation_dc01 string = 'https://raw.githubusercontent.com/jimmylindo/M365Masterclass2022/main/ACME-DC01Config/'
+//param assetLocation_dc01 string = 'https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/ACME-DC01Config/'
 
 @description('The location of resources such as templates and DSC modules that the script is dependent')
-param assetLocation_CreateADForest string = 'https://raw.githubusercontent.com/jimmylindo/M365Masterclass2022/main/DSC/'
+param assetLocation_CreateADForest string = 'https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/DSC/'
 
 @description('The FQDN of the Active Directory Domain to be created')
 param domainName string = 'CORP.ACME.COM'
