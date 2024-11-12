@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_acme_dc01_name": {
+            "value": null
+        },
+        "virtualMachines_demo_cl01_name": {
+            "value": null
+        },
+        "networkInterfaces_acme_dc01688_name": {
+            "value": null
+        },
+        "networkInterfaces_demo_cl01374_name": {
+            "value": null
+        },
+        "virtualNetworks_demo_cl01_vnet_name": {
+            "value": null
+        },
+        "bastionHosts_demo_cl01_vnet_bastion_name": {
+            "value": null
+        },
+        "networkSecurityGroups_demo_cl01_nsg_name": {
+            "value": null
+        },
+        "schedules_shutdown_computevm_acme_dc01_name": {
+            "value": null
+        },
+        "schedules_shutdown_computevm_demo_cl01_name": {
+            "value": null
+        }
+    }
+}
