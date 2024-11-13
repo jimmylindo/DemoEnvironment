@@ -137,14 +137,14 @@ resource VM_acme_dc01_Resource 'Microsoft.Compute/virtualMachines@2024-07-01' = 
   }
 }
 
-resource DSC_ADDS_Extenstion_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+resource DSC_ADDS_Extention_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   parent: VM_acme_dc01_Resource
   name: 'CreateADForest'
   location: location
   properties: {
     publisher: 'Microsoft.Powershell'
     type: 'DSC'
-    typeHandlerVersion: '2.19'
+    typeHandlerVersion: '2.79'
     autoUpgradeMinorVersion: true
     settings: {
       ModulesUrl: '${assetLocation_CreateADForest}CreateADPDC.zip'
@@ -179,7 +179,7 @@ module Update_VNET_DNS 'nestedtemplates/vnet-with-dns-server.bicep' = {
     virtualNetworkName: VNET_Name
   }
   dependsOn: [
-    DSC_ADDS_Extenstion_to_AMCE_DC01
+    DSC_ADDS_Extention_to_AMCE_DC01
   ]
 }
 
@@ -198,7 +198,7 @@ resource ACME_DC01_CustomScript 'Microsoft.Compute/virtualMachines/extensions@20
     }
   }
   dependsOn: [
-    DSC_ADDS_Extenstion_to_AMCE_DC01
+    DSC_ADDS_Extention_to_AMCE_DC01
   ]
 }
 
