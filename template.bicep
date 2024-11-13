@@ -21,11 +21,11 @@ param networkInterfaces_acme_dc01 string = 'acme-dc01-nic'
 @description('Private IP address of Domain controller.')
 param VM_acme_dc01_privateIP string = '10.0.0.4'
 
-//@description('The location of resources such as templates and DSC modules that the script is dependent')
-//param assetLocation_dc01 string = 'https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/ACME-DC01Config/'
-
 @description('The location of resources such as templates and DSC modules that the script is dependent')
 param assetLocation_CreateADForest string = 'https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/DSC/'
+
+@description('The location of resources such as templates and DSC modules that the script is dependent')
+param assetLocation_dc01 string = 'https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/ACME-DC01Config/'
 
 @description('The FQDN of the Active Directory Domain to be created')
 param domainName string = 'CORP.ACME.COM'
@@ -156,6 +156,25 @@ resource DSC_ADDS_Extenstion_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/ext
       }
     } 
   }
+}
+
+resource ACME_DC01_CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: 'ACME-DC01/CustomScript'
+  location: location
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'CustomScriptExtension'
+    typeHandlerVersion: '1.4'
+    settings: {
+      fileUris: [
+        '${assetLocation_dc01}acme-dc01.ps1'
+      ]
+      commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -File acme-dc01.ps1'
+    }
+  }
+  dependsOn: [
+    DSC_ADDS_Extenstion_to_AMCE_DC01
+  ]
 }
 
 /*

@@ -1,6 +1,6 @@
 ﻿New-Item -Path c:\ -Name temp -Type Directory
 #ladda hem användarlista
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/jimmylindo/M365Masterclass2022/main/ACME-DC01Config/FirstLastEurope.csv -OutFile C:\temp\FirstLastEurope.csv -UseBasicParsing
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/ACME-DC01Config/FirstLastEurope.csv -OutFile C:\temp\FirstLastEurope.csv -UseBasicParsing
 
 #Skapa Share för användare
 New-SmbShare -name resources -Path C:\temp -FullAccess "corp\Domain Users"
