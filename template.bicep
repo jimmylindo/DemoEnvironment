@@ -2,9 +2,16 @@
 param location string = 'northeurope'
 
 param VNET_NSG_Name string = 'adds-subnet-vnet-nsg'
+
+@description('Virtual network address range.')
+param virtualNetworkAddressRange string = '10.0.0.0/16'
+
 param VNET_Name string = 'demo-vnet'
 @description('Subnet name.')
 param subnetName string = 'adds-subnet'
+
+@description('Subnet IP range.')
+param subnetRange string = '10.0.0.0/24'
 
 @description('UserName')
 param adminUsername string = 'sysadmin'
@@ -51,14 +58,14 @@ resource VNET_Name_resource 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   properties: {
     addressSpace: {
       addressPrefixes: [
-        '10.0.0.0/16'
+        virtualNetworkAddressRange
       ]
     }
     subnets: [
       {
         name: subnetName
         properties: {
-          addressPrefix: '10.0.0.0/24'
+          addressPrefix: subnetRange
           networkSecurityGroup: {
             id: vnet_nsg_name_resource.id
           }
@@ -156,6 +163,24 @@ resource DSC_ADDS_Extenstion_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/ext
       }
     } 
   }
+}
+
+module Update_VNET_DNS 'nestedtemplates/vnet-with-dns-server.bicep' = {
+  name: 'UpdateVNetDNS'
+  params: {
+    location: location
+    DNSServerAddress: [
+      VM_acme_dc01_privateIP
+    ]
+    networkSecurityGroupName: VNET_NSG_Name
+    subnetName: subnetName
+    subnetRange: subnetRange
+    virtualNetworkAddressRange: virtualNetworkAddressRange
+    virtualNetworkName: VNET_Name
+  }
+  dependsOn: [
+    DSC_ADDS_Extenstion_to_AMCE_DC01
+  ]
 }
 
 resource ACME_DC01_CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
