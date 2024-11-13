@@ -137,7 +137,7 @@ resource DSC_ADDS_Extenstion_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/ext
   properties: {
     publisher: 'Microsoft.Powershell'
     type: 'DSC'
-    typeHandlerVersion: '2.76'
+    typeHandlerVersion: '2.19'
     autoUpgradeMinorVersion: true
     settings: {
       ModulesUrl: '${assetLocation_CreateADForest}CreateADPDC.zip'
