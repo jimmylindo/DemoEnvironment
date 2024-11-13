@@ -77,6 +77,9 @@ resource VNET_Name_resource 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource networkInterface_dc01_resource 'Microsoft.Network/networkInterfaces@2024-03-01' = {
   name: networkInterfaces_acme_dc01
   location: location
+  dependsOn: [
+    VNET_Name_resource
+  ]
   properties: {
     ipConfigurations: [
       {
