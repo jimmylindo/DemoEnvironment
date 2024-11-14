@@ -25,6 +25,8 @@ param VM_acme_dc01_name string = 'acme-dc01'
 
 param networkInterfaces_acme_dc01 string = 'acme-dc01-nic'
 
+param schedules_shutdown_computevm_acme_dc01_name string = 'Shutdown-dc01'
+
 @description('Private IP address of Domain controller.')
 param VM_acme_dc01_privateIP string = '10.0.0.4'
 
@@ -128,7 +130,10 @@ resource VM_acme_dc01_Resource 'Microsoft.Compute/virtualMachines@2024-07-01' = 
       }
       osDisk: {
         createOption: 'FromImage'
-        //diskSizeGB: 40
+        managedDisk: {
+          storageAccountType: 'StandardSSD_LRS'
+        }
+        diskSizeGB: 40
       }
     }
     networkProfile: {
@@ -138,6 +143,34 @@ resource VM_acme_dc01_Resource 'Microsoft.Compute/virtualMachines@2024-07-01' = 
         }
       ]
     }
+    licenseType: 'Windows_Server'
+    securityProfile: {
+      uefiSettings: {
+        secureBootEnabled: true
+        vTpmEnabled: true
+      }
+      securityType: 'TrustedLaunch'
+    }
+  }
+}
+
+resource schedules_shutdown_computevm_acme_dc01_name_resource 'microsoft.devtestlab/schedules@2018-09-15' = {
+  name: schedules_shutdown_computevm_acme_dc01_name
+  location: 'northeurope'
+  properties: {
+    status: 'Enabled'
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      time: '1900'
+    }
+    timeZoneId: 'UTC'
+    notificationSettings: {
+      status: 'Enabled'
+      timeInMinutes: 30
+      emailRecipient: 'jimmy@cloudtechnu.onmicrosoft.com'
+      notificationLocale: 'en'
+    }
+    targetResourceId: VM_acme_dc01_Resource.id
   }
 }
 
@@ -167,6 +200,9 @@ resource DSC_ADDS_Extention_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/exte
       }
     } 
   }
+  dependsOn: [
+    schedules_shutdown_computevm_acme_dc01_name_resource
+  ]
 }
 
 module Update_VNET_DNS 'nestedtemplates/vnet-with-dns-server.bicep' = {
