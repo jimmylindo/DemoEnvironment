@@ -23,14 +23,9 @@ configuration CreateADPDC
             RebootNodeIfNeeded = $true
         }
 
-        PendingReboot BeforeConfig {
-            Name   = 'BeforeConfig'
-        }
-
         WindowsFeature DNS { 
             Ensure = "Present" 
             Name   = "DNS"		
-            DependsOn = "[PendingReboot]BeforeConfig"
         }
 
         Script GuestAgent
