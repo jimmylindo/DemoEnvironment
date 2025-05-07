@@ -1,395 +1,392 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "virtualMachines_acme_dc01_name": {
-            "defaultValue": "acme-dc01",
-            "type": "String"
-        },
-        "virtualMachines_demo_cl01_name": {
-            "defaultValue": "demo-cl01",
-            "type": "String"
-        },
-        "networkInterfaces_acme_dc01688_name": {
-            "defaultValue": "acme-dc01688",
-            "type": "String"
-        },
-        "networkInterfaces_demo_cl01374_name": {
-            "defaultValue": "demo-cl01374",
-            "type": "String"
-        },
-        "virtualNetworks_demo_cl01_vnet_name": {
-            "defaultValue": "demo-cl01-vnet",
-            "type": "String"
-        },
-        "bastionHosts_demo_cl01_vnet_bastion_name": {
-            "defaultValue": "demo-cl01-vnet-bastion",
-            "type": "String"
-        },
-        "networkSecurityGroups_demo_cl01_nsg_name": {
-            "defaultValue": "demo-cl01-nsg",
-            "type": "String"
-        },
-        "schedules_shutdown_computevm_acme_dc01_name": {
-            "defaultValue": "shutdown-computevm-acme-dc01",
-            "type": "String"
-        },
-        "schedules_shutdown_computevm_demo_cl01_name": {
-            "defaultValue": "shutdown-computevm-demo-cl01",
-            "type": "String"
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.35.1.17967",
+      "templateHash": "3586188731023088186"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "northeurope",
+      "metadata": {
+        "description": "This deploys the resources to Region North Europe. We use the resources in this location because bastion host in dev mode"
+      }
     },
-    "variables": {},
-    "resources": [
-        {
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2024-01-01",
-            "name": "[parameters('networkSecurityGroups_demo_cl01_nsg_name')]",
-            "location": "northeurope",
-            "properties": {
-                "securityRules": []
-            }
+    "VNET_NSG_Name": {
+      "type": "string",
+      "defaultValue": "adds-subnet-vnet-nsg"
+    },
+    "virtualNetworkAddressRange": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "Virtual network address range."
+      }
+    },
+    "VNET_Name": {
+      "type": "string",
+      "defaultValue": "demo-vnet"
+    },
+    "subnetName": {
+      "type": "string",
+      "defaultValue": "adds-subnet",
+      "metadata": {
+        "description": "Subnet name."
+      }
+    },
+    "subnetRange": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24",
+      "metadata": {
+        "description": "Subnet IP range."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "sysadmin",
+      "metadata": {
+        "description": "UserName"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "defaultValue": "Passw0rd1234!",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM and domain"
+      }
+    },
+    "VM_acme_dc01_name": {
+      "type": "string",
+      "defaultValue": "acme-dc01",
+      "metadata": {
+        "description": "Virtual Machine Domain Controller"
+      }
+    },
+    "networkInterfaces_acme_dc01": {
+      "type": "string",
+      "defaultValue": "acme-dc01-nic"
+    },
+    "VM_acme_dc01_privateIP": {
+      "type": "string",
+      "defaultValue": "10.0.0.4",
+      "metadata": {
+        "description": "Private IP address of Domain controller."
+      }
+    },
+    "assetLocation_CreateADForest": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/DSC/",
+      "metadata": {
+        "description": "The location of resources such as templates and DSC modules that the script is dependent"
+      }
+    },
+    "assetLocation_dc01": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/jimmylindo/DemoEnvironment/refs/heads/main/ACME-DC01Config/",
+      "metadata": {
+        "description": "The location of resources such as templates and DSC modules that the script is dependent"
+      }
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": "CORP.ACME.COM",
+      "metadata": {
+        "description": "The FQDN of the Active Directory Domain to be created"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-01-01",
+      "name": "[parameters('VNET_NSG_Name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2024-01-01",
+      "name": "[parameters('VNET_Name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('virtualNetworkAddressRange')]"
+          ]
         },
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2024-01-01",
-            "name": "[parameters('virtualNetworks_demo_cl01_vnet_name')]",
-            "location": "northeurope",
+        "subnets": [
+          {
+            "name": "[parameters('subnetName')]",
             "properties": {
+              "addressPrefix": "[parameters('subnetRange')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('VNET_NSG_Name'))]"
+              },
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Disabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          }
+        ],
+        "virtualNetworkPeerings": [],
+        "enableDdosProtection": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('VNET_NSG_Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2024-03-01",
+      "name": "[parameters('networkInterfaces_acme_dc01')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('VM_acme_dc01_privateIP')]",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VNET_Name'), parameters('subnetName'))]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('VNET_Name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2024-07-01",
+      "name": "[parameters('VM_acme_dc01_name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_B2ms"
+        },
+        "osProfile": {
+          "computerName": "[parameters('VM_acme_dc01_name')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2025-datacenter-azure-edition",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "StandardSSD_LRS"
+            },
+            "diskSizeGB": 127
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_acme_dc01'))]"
+            }
+          ]
+        },
+        "licenseType": "Windows_Server",
+        "securityProfile": {
+          "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": true
+          },
+          "securityType": "TrustedLaunch"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_acme_dc01'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2024-07-01",
+      "name": "[format('{0}/{1}', parameters('VM_acme_dc01_name'), 'CreateADForest')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.79",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "ModulesUrl": "[format('{0}CreateADPDC.zip', parameters('assetLocation_CreateADForest'))]",
+          "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
+          "Properties": {
+            "DomainName": "[parameters('domainName')]",
+            "AdminCreds": {
+              "UserName": "[parameters('adminUsername')]",
+              "Password": "PrivateSettingsRef:AdminPassword"
+            }
+          }
+        },
+        "protectedSettings": {
+          "Items": {
+            "AdminPassword": "[parameters('adminPassword')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('VM_acme_dc01_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2024-07-01",
+      "name": "ACME-DC01/CustomScript",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.4",
+        "settings": {
+          "fileUris": [
+            "[format('{0}acme-dc01.ps1', parameters('assetLocation_dc01'))]"
+          ],
+          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File acme-dc01.ps1"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('VM_acme_dc01_name'), 'CreateADForest')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "UpdateVNetDNS",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "DNSServerAddress": {
+            "value": [
+              "[parameters('VM_acme_dc01_privateIP')]"
+            ]
+          },
+          "networkSecurityGroupName": {
+            "value": "[parameters('VNET_NSG_Name')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnetName')]"
+          },
+          "subnetRange": {
+            "value": "[parameters('subnetRange')]"
+          },
+          "virtualNetworkAddressRange": {
+            "value": "[parameters('virtualNetworkAddressRange')]"
+          },
+          "virtualNetworkName": {
+            "value": "[parameters('VNET_Name')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "3268870069667139355"
+            }
+          },
+          "parameters": {
+            "virtualNetworkName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Virtual Network to Create"
+              }
+            },
+            "virtualNetworkAddressRange": {
+              "type": "string",
+              "metadata": {
+                "description": "The address range of the new VNET in CIDR format"
+              }
+            },
+            "subnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the subnet created in the new VNET"
+              }
+            },
+            "subnetRange": {
+              "type": "string",
+              "metadata": {
+                "description": "The address range of the subnet created in the new VNET"
+              }
+            },
+            "DNSServerAddress": {
+              "type": "array",
+              "metadata": {
+                "description": "The DNS address(es) of the DNS Server(s) used by the VNET"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            },
+            "networkSecurityGroupName": {
+              "type": "string",
+              "metadata": {
+                "description": "NSG name"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2020-08-01",
+              "name": "[parameters('virtualNetworkName')]",
+              "location": "[parameters('location')]",
+              "properties": {
                 "addressSpace": {
-                    "addressPrefixes": [
-                        "10.0.0.0/16"
-                    ]
+                  "addressPrefixes": [
+                    "[parameters('virtualNetworkAddressRange')]"
+                  ]
+                },
+                "dhcpOptions": {
+                  "dnsServers": "[parameters('DNSServerAddress')]"
                 },
                 "subnets": [
-                    {
-                        "name": "default",
-                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_demo_cl01_vnet_name'), 'default')]",
-                        "properties": {
-                            "addressPrefix": "10.0.0.0/24",
-                            "delegations": [],
-                            "privateEndpointNetworkPolicies": "Disabled",
-                            "privateLinkServiceNetworkPolicies": "Enabled"
-                        },
-                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                  {
+                    "name": "[parameters('subnetName')]",
+                    "properties": {
+                      "addressPrefix": "[parameters('subnetRange')]",
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+                      }
                     }
-                ],
-                "virtualNetworkPeerings": [],
-                "enableDdosProtection": false
+                  }
+                ]
+              }
             }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2024-07-01",
-            "name": "[parameters('virtualMachines_acme_dc01_name')]",
-            "location": "northeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_acme_dc01688_name'))]"
-            ],
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "Standard_B2ms"
-                },
-                "additionalCapabilities": {
-                    "hibernationEnabled": false
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "2025-datacenter-azure-edition",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "osType": "Windows",
-                        "name": "[concat(parameters('virtualMachines_acme_dc01_name'), '_OsDisk_1_340690e3e43f44cda463f9372746c232')]",
-                        "createOption": "FromImage",
-                        "caching": "ReadWrite",
-                        "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_acme_dc01_name'), '_OsDisk_1_340690e3e43f44cda463f9372746c232'))]"
-                        },
-                        "deleteOption": "Delete"
-                    },
-                    "dataDisks": [],
-                    "diskControllerType": "SCSI"
-                },
-                "osProfile": {
-                    "computerName": "[parameters('virtualMachines_acme_dc01_name')]",
-                    "adminUsername": "sysadmin",
-                    "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true,
-                        "patchSettings": {
-                            "patchMode": "AutomaticByPlatform",
-                            "automaticByPlatformSettings": {
-                                "rebootSetting": "IfRequired"
-                            },
-                            "assessmentMode": "ImageDefault",
-                            "enableHotpatching": true
-                        }
-                    },
-                    "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
-                },
-                "securityProfile": {
-                    "uefiSettings": {
-                        "secureBootEnabled": true,
-                        "vTpmEnabled": true
-                    },
-                    "securityType": "TrustedLaunch"
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_acme_dc01688_name'))]",
-                            "properties": {
-                                "deleteOption": "Detach"
-                            }
-                        }
-                    ]
-                },
-                "diagnosticsProfile": {
-                    "bootDiagnostics": {
-                        "enabled": true
-                    }
-                },
-                "licenseType": "Windows_Server"
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2024-07-01",
-            "name": "[parameters('virtualMachines_demo_cl01_name')]",
-            "location": "northeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_demo_cl01374_name'))]"
-            ],
-            "zones": [
-                "2"
-            ],
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "Standard_B2ls_v2"
-                },
-                "additionalCapabilities": {
-                    "hibernationEnabled": false
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "microsoftwindowsdesktop",
-                        "offer": "windows-11",
-                        "sku": "win11-22h2-entn",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "osType": "Windows",
-                        "name": "[concat(parameters('virtualMachines_demo_cl01_name'), '_OsDisk_1_afb20cee6c23440f852014836f7c153b')]",
-                        "createOption": "FromImage",
-                        "caching": "ReadWrite",
-                        "managedDisk": {
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_demo_cl01_name'), '_OsDisk_1_afb20cee6c23440f852014836f7c153b'))]"
-                        },
-                        "deleteOption": "Delete"
-                    },
-                    "dataDisks": [],
-                    "diskControllerType": "SCSI"
-                },
-                "osProfile": {
-                    "computerName": "[parameters('virtualMachines_demo_cl01_name')]",
-                    "adminUsername": "sysadmin",
-                    "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true,
-                        "patchSettings": {
-                            "patchMode": "AutomaticByOS",
-                            "assessmentMode": "ImageDefault",
-                            "enableHotpatching": false
-                        }
-                    },
-                    "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
-                },
-                "securityProfile": {
-                    "uefiSettings": {
-                        "secureBootEnabled": true,
-                        "vTpmEnabled": true
-                    },
-                    "securityType": "TrustedLaunch"
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_demo_cl01374_name'))]",
-                            "properties": {
-                                "deleteOption": "Detach"
-                            }
-                        }
-                    ]
-                },
-                "licenseType": "Windows_Client"
-            }
-        },
-        {
-            "type": "microsoft.devtestlab/schedules",
-            "apiVersion": "2018-09-15",
-            "name": "[parameters('schedules_shutdown_computevm_acme_dc01_name')]",
-            "location": "northeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_acme_dc01_name'))]"
-            ],
-            "properties": {
-                "status": "Enabled",
-                "taskType": "ComputeVmShutdownTask",
-                "dailyRecurrence": {
-                    "time": "1900"
-                },
-                "timeZoneId": "UTC",
-                "notificationSettings": {
-                    "status": "Enabled",
-                    "timeInMinutes": 30,
-                    "emailRecipient": "jimmy@cloudtechnu.onmicrosoft.com",
-                    "notificationLocale": "en"
-                },
-                "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_acme_dc01_name'))]"
-            }
-        },
-        {
-            "type": "microsoft.devtestlab/schedules",
-            "apiVersion": "2018-09-15",
-            "name": "[parameters('schedules_shutdown_computevm_demo_cl01_name')]",
-            "location": "northeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_demo_cl01_name'))]"
-            ],
-            "properties": {
-                "status": "Enabled",
-                "taskType": "ComputeVmShutdownTask",
-                "dailyRecurrence": {
-                    "time": "1900"
-                },
-                "timeZoneId": "UTC",
-                "notificationSettings": {
-                    "status": "Enabled",
-                    "timeInMinutes": 30,
-                    "emailRecipient": "jimmy@cloudtechnu.onmicrosoft.com",
-                    "notificationLocale": "en"
-                },
-                "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_demo_cl01_name'))]"
-            }
-        },
-        {
-            "type": "Microsoft.Network/bastionHosts",
-            "apiVersion": "2024-01-01",
-            "name": "[parameters('bastionHosts_demo_cl01_vnet_bastion_name')]",
-            "location": "northeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_demo_cl01_vnet_name'))]"
-            ],
-            "sku": {
-                "name": "Developer"
-            },
-            "properties": {
-                "dnsName": "omnibrain.northeurope.bastionglobal.azure.com",
-                "scaleUnits": 2,
-                "virtualNetwork": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_demo_cl01_vnet_name'))]"
-                },
-                "ipConfigurations": []
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2024-01-01",
-            "name": "[parameters('networkInterfaces_acme_dc01688_name')]",
-            "location": "northeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_demo_cl01_vnet_name'), 'default')]"
-            ],
-            "kind": "Regular",
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_acme_dc01688_name')), '/ipConfigurations/ipconfig1')]",
-                        "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
-                        "properties": {
-                            "privateIPAddress": "10.0.0.5",
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_demo_cl01_vnet_name'), 'default')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
-                    }
-                ],
-                "dnsSettings": {
-                    "dnsServers": []
-                },
-                "enableAcceleratedNetworking": false,
-                "enableIPForwarding": false,
-                "disableTcpStateTracking": false,
-                "nicType": "Standard",
-                "auxiliaryMode": "None",
-                "auxiliarySku": "None"
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2024-01-01",
-            "name": "[concat(parameters('virtualNetworks_demo_cl01_vnet_name'), '/default')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_demo_cl01_vnet_name'))]"
-            ],
-            "properties": {
-                "addressPrefix": "10.0.0.0/24",
-                "delegations": [],
-                "privateEndpointNetworkPolicies": "Disabled",
-                "privateLinkServiceNetworkPolicies": "Enabled"
-            }
-        },
-        {
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2024-01-01",
-            "name": "[parameters('networkInterfaces_demo_cl01374_name')]",
-            "location": "northeurope",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_demo_cl01_vnet_name'), 'default')]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_demo_cl01_nsg_name'))]"
-            ],
-            "kind": "Regular",
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_demo_cl01374_name')), '/ipConfigurations/ipconfig1')]",
-                        "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
-                        "properties": {
-                            "privateIPAddress": "10.0.0.4",
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_demo_cl01_vnet_name'), 'default')]"
-                            },
-                            "primary": true,
-                            "privateIPAddressVersion": "IPv4"
-                        }
-                    }
-                ],
-                "dnsSettings": {
-                    "dnsServers": []
-                },
-                "enableAcceleratedNetworking": true,
-                "enableIPForwarding": false,
-                "disableTcpStateTracking": false,
-                "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_demo_cl01_nsg_name'))]"
-                },
-                "nicType": "Standard",
-                "auxiliaryMode": "None",
-                "auxiliarySku": "None"
-            }
+          ]
         }
-    ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('VM_acme_dc01_name'), 'CreateADForest')]"
+      ]
+    }
+  ]
 }
