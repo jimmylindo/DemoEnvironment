@@ -25,7 +25,7 @@ param VM_acme_dc01_name string = 'acme-dc01'
 
 param networkInterfaces_acme_dc01 string = 'acme-dc01-nic'
 
-param schedules_shutdown_computevm_acme_dc01_name string = 'Shutdown-dc01'
+//param schedules_shutdown_computevm_acme_dc01_name string = 'Shutdown-dc01'
 
 @description('Private IP address of Domain controller.')
 param VM_acme_dc01_privateIP string = '10.0.0.4'
@@ -52,6 +52,7 @@ resource vnet_nsg_name_resource 'Microsoft.Network/networkSecurityGroups@2024-01
   properties: {
     securityRules: []
   }
+
 }
 
 resource VNET_Name_resource 'Microsoft.Network/virtualNetworks@2024-01-01' = {
@@ -119,21 +120,21 @@ resource VM_acme_dc01_Resource 'Microsoft.Compute/virtualMachines@2024-07-01' = 
     }
     storageProfile: {
       imageReference: {
-        //publisher: 'MicrosoftWindowsServer'
-        //offer: 'WindowsServer'
-        //sku: '2025-datacenter-azure-edition'
-        //version: 'latest'
         publisher: 'MicrosoftWindowsServer'
         offer: 'WindowsServer'
-        sku: '2025-Datacenter-smalldisk'
+        sku: '2025-datacenter-azure-edition'
         version: 'latest'
+        //publisher: 'MicrosoftWindowsServer'
+        //offer: 'WindowsServer'
+        //sku: '2025-Datacenter-smalldisk'
+        //version: 'latest'
       }
       osDisk: {
         createOption: 'FromImage'
         managedDisk: {
           storageAccountType: 'StandardSSD_LRS'
         }
-        diskSizeGB: 40
+        diskSizeGB: 127
       }
     }
     networkProfile: {
@@ -154,7 +155,7 @@ resource VM_acme_dc01_Resource 'Microsoft.Compute/virtualMachines@2024-07-01' = 
   }
 }
 
-resource schedules_shutdown_computevm_acme_dc01_name_resource 'microsoft.devtestlab/schedules@2018-09-15' = {
+/*resource schedules_shutdown_computevm_acme_dc01_name_resource 'microsoft.devtestlab/schedules@2018-09-15' = {
   name: schedules_shutdown_computevm_acme_dc01_name
   location: 'northeurope'
   properties: {
@@ -173,6 +174,7 @@ resource schedules_shutdown_computevm_acme_dc01_name_resource 'microsoft.devtest
     targetResourceId: VM_acme_dc01_Resource.id
   }
 }
+*/
 
 resource DSC_ADDS_Extention_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   parent: VM_acme_dc01_Resource
@@ -200,9 +202,9 @@ resource DSC_ADDS_Extention_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/exte
       }
     } 
   }
-  dependsOn: [
-    schedules_shutdown_computevm_acme_dc01_name_resource
-  ]
+  //dependsOn: [
+  //  schedules_shutdown_computevm_acme_dc01_name_resource
+  //]
 }
 
 module Update_VNET_DNS 'nestedtemplates/vnet-with-dns-server.bicep' = {
@@ -242,134 +244,6 @@ resource ACME_DC01_CustomScript 'Microsoft.Compute/virtualMachines/extensions@20
   ]
 }
 
-/*
-resource VM_acme_dc01_name_resource 'Microsoft.Compute/virtualMachines@2024-07-01' = {
-  name: VM_acme_dc01_name
-  location: location
-  properties: {
-    hardwareProfile: {
-      vmSize: 'Standard_B2ms'
-    }
-    additionalCapabilities: {
-      hibernationEnabled: false
-    }
-    storageProfile: {
-      imageReference: {
-        publisher: 'MicrosoftWindowsServer'
-        offer: 'WindowsServer'
-        sku: '2025-datacenter-azure-edition'
-        version: 'latest'
-      }
-      osDisk: {
-        osType: 'Windows'
-        name: '${VM_acme_dc01_name}_osDisk01'
-        createOption: 'FromImage'
-        diskSizeGB: 50
-        caching: 'ReadWrite'
-        managedDisk: {
-          id: resourceId('Microsoft.Compute/disks',
-          '${VM_acme_dc01_name}_osDisk01'
-          )
-        }
-        deleteOption: 'Delete'
-      }
-    }
-    networkProfile: {
-      networkInterfaces: [
-        {
-          id: networkInterface_dc01_resource.id
-          properties: {
-            deleteOption: 'Detach'
-          }
-        }
-      ]
-    }
-  }
-}
-*/
-
-
-/*
-resource VM_acme_dc01_name_resource 'Microsoft.Compute/virtualMachines@2024-07-01' = {
-  name: VM_acme_dc01_name
-  location: 'northeurope'
-  properties: {
-    hardwareProfile: {
-      vmSize: 'Standard_B2ms'
-    }
-    additionalCapabilities: {
-      hibernationEnabled: false
-    }
-    storageProfile: {
-      imageReference: {
-        publisher: 'MicrosoftWindowsServer'
-        offer: 'WindowsServer'
-        sku: '2025-datacenter-azure-edition'
-        version: 'latest'
-      }
-      osDisk: {
-        osType: 'Windows'
-        name: '${VM_acme_dc01_name}_OsDisk_1_${uniqueString(resourceGroup().id, VM_acme_dc01_name)}'
-        createOption: 'FromImage'
-        diskSizeGB: 50
-        caching: 'ReadWrite'
-        managedDisk: {
-          id: resourceId(
-            'Microsoft.Compute/disks',
-            '${VM_acme_dc01_name}_OsDisk_1_340690e3e43f44cda463f9372746c232'
-          )
-        }
-        deleteOption: 'Delete'
-      }
-      dataDisks: []
-      diskControllerType: 'SCSI'
-    }
-    osProfile: {
-      computerName: VM_acme_dc01_name
-      adminUsername: adminUsername
-      adminPassword: adminPassword
-      windowsConfiguration: {
-        provisionVMAgent: true
-        enableAutomaticUpdates: true
-        patchSettings: {
-          patchMode: 'AutomaticByPlatform'
-          automaticByPlatformSettings: {
-            rebootSetting: 'IfRequired'
-          }
-          assessmentMode: 'ImageDefault'
-          enableHotpatching: true
-        }
-      }
-      secrets: []
-      allowExtensionOperations: true
-      requireGuestProvisionSignal: true
-    }
-    securityProfile: {
-      uefiSettings: {
-        secureBootEnabled: true
-        vTpmEnabled: true
-      }
-      securityType: 'TrustedLaunch'
-    }
-    networkProfile: {
-      networkInterfaces: [
-        {
-          id: networkInterface_dc01_resource.id
-          properties: {
-            deleteOption: 'Detach'
-          }
-        }
-      ]
-    }
-    diagnosticsProfile: {
-      bootDiagnostics: {
-        enabled: true
-      }
-    }
-    licenseType: 'Windows_Server'
-  }
-}
-*/
 /*
 resource virtualMachines_demo_cl01_name_resource 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: virtualMachines_demo_cl01_name
@@ -481,22 +355,6 @@ resource schedules_shutdown_computevm_demo_cl01_name_resource 'microsoft.devtest
       notificationLocale: 'en'
     }
     targetResourceId: virtualMachines_demo_cl01_name_resource.id
-  }
-}
-
-resource bastionHosts_demo_cl01_vnet_bastion_name_resource 'Microsoft.Network/bastionHosts@2024-01-01' = {
-  name: bastionHosts_demo_cl01_vnet_bastion_name
-  location: 'northeurope'
-  sku: {
-    name: 'Developer'
-  }
-  properties: {
-    dnsName: 'omnibrain.northeurope.bastionglobal.azure.com'
-    scaleUnits: 2
-    virtualNetwork: {
-      id: virtualNetworks_demo_cl01_vnet_name_resource.id
-    }
-    ipConfigurations: []
   }
 }
 
