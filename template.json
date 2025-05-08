@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.35.1.17967",
-      "templateHash": "9479744714528229824"
+      "templateHash": "10647728270643998277"
     }
   },
   "parameters": {
@@ -190,8 +190,7 @@
             "createOption": "FromImage",
             "managedDisk": {
               "storageAccountType": "StandardSSD_LRS"
-            },
-            "diskSizeGB": 127
+            }
           }
         },
         "networkProfile": {
@@ -424,7 +423,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.35.1.17967",
-              "templateHash": "15557640324196380487"
+              "templateHash": "15798257873844240609"
             }
           },
           "parameters": {
@@ -537,8 +536,7 @@
                     "createOption": "FromImage",
                     "managedDisk": {
                       "storageAccountType": "StandardSSD_LRS"
-                    },
-                    "diskSizeGB": 127
+                    }
                   }
                 },
                 "securityProfile": {

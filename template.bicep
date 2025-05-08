@@ -134,7 +134,6 @@ resource VM_acme_dc01_Resource 'Microsoft.Compute/virtualMachines@2024-07-01' = 
         managedDisk: {
           storageAccountType: 'StandardSSD_LRS'
         }
-        diskSizeGB: 127
       }
     }
     networkProfile: {

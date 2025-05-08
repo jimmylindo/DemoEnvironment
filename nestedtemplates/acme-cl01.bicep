@@ -76,7 +76,6 @@ resource acme_cl01_vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
         managedDisk: {
           storageAccountType: 'StandardSSD_LRS'
         }
-        diskSizeGB: 127
       }
       
     }
