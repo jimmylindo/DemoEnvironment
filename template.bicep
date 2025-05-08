@@ -244,6 +244,20 @@ resource ACME_DC01_CustomScript 'Microsoft.Compute/virtualMachines/extensions@20
   ]
 }
 
+module acme_cl01 './nestedtemplates/acme-cl01.bicep' = {
+  name: 'acme-cl01'
+  params: {
+    location: location
+    adminUsername: adminUsername
+    adminPassword: adminPassword
+    domainName: domainName
+    subnetName: subnetName
+    virtualNetworkName: VNET_Name
+  }
+  dependsOn: [
+    Update_VNET_DNS
+  ]
+}
 /*
 resource virtualMachines_demo_cl01_name_resource 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: virtualMachines_demo_cl01_name
