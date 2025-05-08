@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.35.1.17967",
-      "templateHash": "3586188731023088186"
+      "templateHash": "9479744714528229824"
     }
   },
   "parameters": {
@@ -386,6 +386,178 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('VM_acme_dc01_name'), 'CreateADForest')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "acme-cl01",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "domainName": {
+            "value": "[parameters('domainName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnetName')]"
+          },
+          "virtualNetworkName": {
+            "value": "[parameters('VNET_Name')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.35.1.17967",
+              "templateHash": "15557640324196380487"
+            }
+          },
+          "parameters": {
+            "domainName": {
+              "type": "string"
+            },
+            "domainToJoin": {
+              "type": "string",
+              "defaultValue": "corp.acme.com",
+              "metadata": {
+                "description": "The FQDN of the AD domain"
+              }
+            },
+            "ouPath": {
+              "type": "string",
+              "defaultValue": "OU=Computers; OU=ACME; DC=corp; DC=acme; DC=com",
+              "metadata": {
+                "description": "Organizational Unit path in which the nodes and cluster will be present."
+              }
+            },
+            "domainJoinOptions": {
+              "type": "int",
+              "defaultValue": 3,
+              "metadata": {
+                "description": "Set of bit flags that define the join options. Default value of 3 is a combination of NETSETUP_JOIN_DOMAIN (0x00000001) & NETSETUP_ACCT_CREATE (0x00000002) i.e. will join the domain and create the account on the domain. For more information see https://msdn.microsoft.com/en-us/library/aa392154(v=vs.85).aspx"
+              }
+            },
+            "adminUsername": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the administrator of the new VM."
+              }
+            },
+            "adminPassword": {
+              "type": "securestring",
+              "metadata": {
+                "description": "The password for the administrator account of the new VM."
+              }
+            },
+            "subnetName": {
+              "type": "string",
+              "metadata": {
+                "description": "Subnet name."
+              }
+            },
+            "virtualNetworkName": {
+              "type": "string",
+              "metadata": {
+                "description": "Virtual network name."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            }
+          },
+          "variables": {
+            "computer_ACME_CL01": "acme-cl01"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/networkInterfaces",
+              "apiVersion": "2021-02-01",
+              "name": "[format('{0}-nic', variables('computer_ACME_CL01'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.Compute/virtualMachines",
+              "apiVersion": "2021-03-01",
+              "name": "[variables('computer_ACME_CL01')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "hardwareProfile": {
+                  "vmSize": "Standard_B2ms"
+                },
+                "osProfile": {
+                  "computerName": "[variables('computer_ACME_CL01')]",
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "adminPassword": "[parameters('adminPassword')]"
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('computer_ACME_CL01')))]"
+                    }
+                  ]
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "microsoftwindowsdesktop",
+                    "offer": "windows-11",
+                    "sku": "win11-24h2-entn",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "createOption": "FromImage",
+                    "managedDisk": {
+                      "storageAccountType": "StandardSSD_LRS"
+                    },
+                    "diskSizeGB": 127
+                  }
+                },
+                "securityProfile": {
+                  "uefiSettings": {
+                    "secureBootEnabled": true,
+                    "vTpmEnabled": true
+                  },
+                  "securityType": "TrustedLaunch"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', format('{0}-nic', variables('computer_ACME_CL01')))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'UpdateVNetDNS')]"
       ]
     }
   ]
