@@ -39,10 +39,7 @@ param assetLocation_dc01 string = 'https://raw.githubusercontent.com/jimmylindo/
 @description('The FQDN of the Active Directory Domain to be created')
 param domainName string = 'CORP.ACME.COM'
 
-//param virtualMachines_demo_cl01_name string = 'demo-cl01'
-//param networkInterfaces_demo_cl01374_name string = 'demo-cl01374'
 
-//param bastionHosts_demo_cl01_vnet_bastion_name string = 'demo-cl01-vnet-bastion'
 //param schedules_shutdown_computevm_acme_dc01_name string = 'shutdown-computevm-acme-dc01'
 //param schedules_shutdown_computevm_demo_cl01_name string = 'shutdown-computevm-demo-cl01'
 
@@ -201,9 +198,6 @@ resource DSC_ADDS_Extention_to_AMCE_DC01 'Microsoft.Compute/virtualMachines/exte
       }
     } 
   }
-  //dependsOn: [
-  //  schedules_shutdown_computevm_acme_dc01_name_resource
-  //]
 }
 
 module Update_VNET_DNS 'nestedtemplates/vnet-with-dns-server.bicep' = {
@@ -257,79 +251,8 @@ module acme_cl01 './nestedtemplates/acme-cl01.bicep' = {
     Update_VNET_DNS
   ]
 }
+
 /*
-resource virtualMachines_demo_cl01_name_resource 'Microsoft.Compute/virtualMachines@2024-07-01' = {
-  name: virtualMachines_demo_cl01_name
-  location: 'northeurope'
-  zones: [
-    '2'
-  ]
-  properties: {
-    hardwareProfile: {
-      vmSize: 'Standard_B2ls_v2'
-    }
-    additionalCapabilities: {
-      hibernationEnabled: false
-    }
-    storageProfile: {
-      imageReference: {
-        publisher: 'microsoftwindowsdesktop'
-        offer: 'windows-11'
-        sku: 'win11-22h2-entn'
-        version: 'latest'
-      }
-      osDisk: {
-        osType: 'Windows'
-        name: '${virtualMachines_demo_cl01_name}_OsDisk_1_afb20cee6c23440f852014836f7c153b'
-        createOption: 'FromImage'
-        caching: 'ReadWrite'
-        managedDisk: {
-          id: resourceId(
-            'Microsoft.Compute/disks',
-            '${virtualMachines_demo_cl01_name}_OsDisk_1_afb20cee6c23440f852014836f7c153b'
-          )
-        }
-        deleteOption: 'Delete'
-      }
-      dataDisks: []
-      diskControllerType: 'SCSI'
-    }
-    osProfile: {
-      computerName: virtualMachines_demo_cl01_name
-      adminUsername: 'sysadmin'
-      windowsConfiguration: {
-        provisionVMAgent: true
-        enableAutomaticUpdates: true
-        patchSettings: {
-          patchMode: 'AutomaticByOS'
-          assessmentMode: 'ImageDefault'
-          enableHotpatching: false
-        }
-      }
-      secrets: []
-      allowExtensionOperations: true
-      requireGuestProvisionSignal: true
-    }
-    securityProfile: {
-      uefiSettings: {
-        secureBootEnabled: true
-        vTpmEnabled: true
-      }
-      securityType: 'TrustedLaunch'
-    }
-    networkProfile: {
-      networkInterfaces: [
-        {
-          id: networkInterfaces_demo_cl01374_name_resource.id
-          properties: {
-            deleteOption: 'Detach'
-          }
-        }
-      ]
-    }
-    licenseType: 'Windows_Client'
-  }
-}
 
 resource schedules_shutdown_computevm_acme_dc01_name_resource 'microsoft.devtestlab/schedules@2018-09-15' = {
   name: schedules_shutdown_computevm_acme_dc01_name

@@ -88,3 +88,49 @@ resource acme_cl01_vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
     }
   }
 }
+
+resource ACME_CL01_JoinDomain 'Microsoft.Compute/virtualMachines/extensions@2021-03-01' = {
+  name: 'acme-cl01/JoinDomain'
+  location: location
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'JsonADDomainExtension'
+    typeHandlerVersion: '1.3'
+    autoUpgradeMinorVersion: true
+    settings: {
+      name: domainToJoin
+      ouPath: ouPath
+      user: '${domainToJoin}\\${adminUsername}'
+      restart: true
+      options: domainJoinOptions
+    }
+    protectedSettings: {
+      Password: adminPassword
+    }
+  }
+  dependsOn: [
+    acme_cl01_vm
+  ]
+}
+
+/*
+resource schedules_shutdown_computevm_demo_cl01_name_resource 'microsoft.devtestlab/schedules@2018-09-15' = {
+  name: schedules_shutdown_computevm_demo_cl01_name
+  location: 'northeurope'
+  properties: {
+    status: 'Enabled'
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      time: '1900'
+    }
+    timeZoneId: 'UTC'
+    notificationSettings: {
+      status: 'Enabled'
+      timeInMinutes: 30
+      emailRecipient: 'jimmy@cloudtechnu.onmicrosoft.com'
+      notificationLocale: 'en'
+    }
+    targetResourceId: acme_cl01_vm.id
+  }
+}
+*/
