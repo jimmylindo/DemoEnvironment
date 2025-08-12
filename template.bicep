@@ -1,5 +1,5 @@
 @description('This deploys the resources to Region North Europe. We use the resources in this location because bastion host in dev mode')
-param location string = 'swedencentral'
+param location string = 'northeurope'
 
 param VNET_NSG_Name string = 'adds-subnet-vnet-nsg'
 
