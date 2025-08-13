@@ -90,6 +90,7 @@ resource acme_cl01_vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
   }
 }
 
+/*
 resource ACME_CL01_JoinDomain 'Microsoft.Compute/virtualMachines/extensions@2021-03-01' = {
   name: 'acme-cl01/JoinDomain'
   location: location
@@ -113,11 +114,11 @@ resource ACME_CL01_JoinDomain 'Microsoft.Compute/virtualMachines/extensions@2021
     acme_cl01_vm
   ]
 }
+*/
 
-/*
 resource schedules_shutdown_computevm_demo_cl01_name_resource 'microsoft.devtestlab/schedules@2018-09-15' = {
   name: schedules_shutdown_computevm_demo_cl01_name
-  location: 'northeurope'
+  location: location
   properties: {
     status: 'Enabled'
     taskType: 'ComputeVmShutdownTask'
@@ -134,4 +135,4 @@ resource schedules_shutdown_computevm_demo_cl01_name_resource 'microsoft.devtest
     targetResourceId: acme_cl01_vm.id
   }
 }
-*/
+

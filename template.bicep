@@ -1,5 +1,5 @@
 @description('This deploys the resources to Region North Europe. We use the resources in this location because bastion host in dev mode')
-param location string = 'northeurope'
+param location string = 'swedencentral'
 
 param VNET_NSG_Name string = 'adds-subnet-vnet-nsg'
 
@@ -375,4 +375,6 @@ resource networkInterfaces_demo_cl01374_name_resource 'Microsoft.Network/network
     auxiliarySku: 'None'
   }
 }
+
+
 */
