@@ -114,7 +114,7 @@ resource ACME_CL01_JoinDomain 'Microsoft.Compute/virtualMachines/extensions@2021
     acme_cl01_vm
   ]
 }
-*/
+
 
 resource schedules_shutdown_computevm_demo_cl01_name_resource 'microsoft.devtestlab/schedules@2018-09-15' = {
   name: schedules_shutdown_computevm_demo_cl01_name
@@ -136,3 +136,4 @@ resource schedules_shutdown_computevm_demo_cl01_name_resource 'microsoft.devtest
   }
 }
 
+*/
